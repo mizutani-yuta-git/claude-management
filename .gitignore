@@ -6,3 +6,6 @@ secrets/
 **/credentials.json
 **/*.secret
 .DS_Store
+02_finance/
+new_folder/
+.claude/worktrees/

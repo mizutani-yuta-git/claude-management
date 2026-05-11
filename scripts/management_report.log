@@ -1,0 +1,157 @@
+[2026-03-17 19:27:31] ==================================================
+[2026-03-17 19:27:31] [START] management_report 起動
+[2026-03-17 19:27:31] [対象] 20260317_経営会議.pdf
+[2026-03-17 19:27:31] [PDF] テキスト抽出: 20260317_経営会議.pdf
+[2026-03-17 19:27:32] [PDF] 抽出完了: 3816 文字
+[2026-03-17 19:27:32] [Claude] 要約・アクション生成中...
+[2026-03-17 19:27:56] [Claude] 完了: 937 文字
+[2026-03-17 19:27:56] [Slack] DM送信中...
+[2026-03-17 19:27:57] [ERROR] DM open失敗: invalid_auth
+[2026-03-17 19:27:57] [END] management_report 終了
+[2026-03-17 19:35:23] [PDF] テキスト抽出: 展開20260317_経営会議.pdf
+[2026-03-17 19:35:35] [PDF] テキスト抽出: 展開20260317_経営会議.pdf
+[2026-03-17 19:35:40] [PDF] テキスト抽出: 展開20260317_経営会議.pdf
+[2026-03-17 19:37:27] [PDF] テキスト抽出: 20260317_経営会議.pdf
+[2026-03-17 19:37:27] [PDF] 抽出完了: 3816 文字
+[2026-03-17 19:37:27] [Claude] 要約・アクション生成中...
+[2026-03-17 19:37:52] [Claude] 完了: 951 文字
+[2026-03-18 09:50:00] ==================================================
+[2026-03-18 09:50:00] [START] management_report 起動
+[2026-03-18 09:50:00] [対象] 20260317_経営会議.pdf
+[2026-03-18 09:50:00] [PDF] テキスト抽出: 20260317_経営会議.pdf
+[2026-03-18 09:50:01] [PDF] 抽出完了: 3816 文字
+[2026-03-18 09:50:01] [Claude] 要約・アクション生成中...
+[2026-03-18 09:50:04] [Claude] 完了: 33 文字
+[2026-03-18 09:50:04] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-03-18 09:50:04] [完了] 20260317_経営会議.pdf
+[2026-03-18 09:50:04] [END] management_report 終了
+[2026-03-18 09:50:00] ==================================================
+[2026-03-18 09:50:00] [START] management_report 起動
+[2026-03-18 09:50:00] [対象] 20260317_経営会議.pdf
+[2026-03-18 09:50:00] [PDF] テキスト抽出: 20260317_経営会議.pdf
+[2026-03-18 09:50:01] [PDF] 抽出完了: 3816 文字
+[2026-03-18 09:50:01] [Claude] 要約・アクション生成中...
+[2026-03-18 09:50:04] [Claude] 完了: 33 文字
+[2026-03-18 09:50:04] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-03-18 09:50:04] [完了] 20260317_経営会議.pdf
+[2026-03-18 09:50:04] [END] management_report 終了
+[2026-03-18 11:00:46] [PDF] テキスト抽出: 20260317_経営会議.pdf
+[2026-03-18 11:00:48] [PDF] 抽出完了: 3816 文字
+[2026-03-18 11:07:05] [PDF] テキスト抽出: 0213_AI_SeminarWS_Credential.pdf
+[2026-03-18 11:07:06] [PDF] 抽出完了: 2658 文字
+[2026-03-18 11:07:06] [PDF] テキスト抽出: 2511_A3_Credential.pdf
+[2026-03-18 11:07:07] [PDF] 抽出完了: 13320 文字
+[2026-03-18 11:07:07] [PDF] テキスト抽出: amana_image2multichannel_overview.pdf
+[2026-03-18 11:07:07] [PDF] 抽出完了: 3714 文字
+[2026-03-25 09:50:06] ==================================================
+[2026-03-25 09:50:06] [START] management_report 起動
+[2026-03-25 09:50:06] [対象] 20260323_経営会議 共有.pdf
+[2026-03-25 09:50:06] [PDF] テキスト抽出: 20260323_経営会議 共有.pdf
+[2026-03-25 09:50:06] [ERROR] [Errno 11] Resource deadlock avoided
+Traceback (most recent call last):
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfplumber/pdf.py", line 50, in __init__
+    self.doc = PDFDocument(PDFParser(stream), password=password or "")
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfminer/pdfdocument.py", line 721, in __init__
+    pos = self.find_xref(parser)
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfminer/pdfdocument.py", line 966, in find_xref
+    for line in parser.revreadlines():
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfminer/psparser.py", line 261, in revreadlines
+    s = self.fp.read(prevpos - pos)
+OSError: [Errno 11] Resource deadlock avoided
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 148, in main
+    text = extract_pdf_text(pdf_path)
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 76, in extract_pdf_text
+    with pdfplumber.open(pdf_path) as pdf:
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfplumber/pdf.py", line 107, in open
+    return cls(
+  File "/Users/dz0019/Library/Python/3.9/lib/python/site-packages/pdfplumber/pdf.py", line 52, in __init__
+    raise PdfminerException(e)
+pdfplumber.utils.exceptions.PdfminerException: [Errno 11] Resource deadlock avoided
+[2026-03-25 09:50:06] [END] management_report 終了
+[2026-03-25 09:50:06] ==================================================
+[2026-03-25 09:50:06] [START] management_report 起動
+[2026-03-25 09:50:06] [対象] 20260323_経営会議 共有.pdf
+[2026-03-25 09:50:06] [PDF] テキスト抽出: 20260323_経営会議 共有.pdf
+[2026-03-25 09:50:06] [ERROR] [Errno 11] Resource deadlock avoided
+[2026-03-25 09:50:06] [END] management_report 終了
+[2026-04-01 09:50:00] ==================================================
+[2026-04-01 09:50:00] [START] management_report 起動
+[2026-04-01 09:50:00] [対象] 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:00] [PDF] テキスト抽出: 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:10] [PDF] 抽出完了: 68798 文字
+[2026-04-01 09:50:10] [Claude] 要約・アクション生成中...
+[2026-04-01 09:50:12] [Claude] 完了: 33 文字
+[2026-04-01 09:50:12] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-01 09:50:12] [完了] 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:12] [END] management_report 終了
+[2026-04-01 09:50:00] ==================================================
+[2026-04-01 09:50:00] [START] management_report 起動
+[2026-04-01 09:50:00] [対象] 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:00] [PDF] テキスト抽出: 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:10] [PDF] 抽出完了: 68798 文字
+[2026-04-01 09:50:10] [Claude] 要約・アクション生成中...
+[2026-04-01 09:50:12] [Claude] 完了: 33 文字
+[2026-04-01 09:50:12] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-01 09:50:12] [完了] 20260326外部共有禁止【ダイレクトマーケ】N organic Basic 20260324~_準備シート.pdf
+[2026-04-01 09:50:12] [END] management_report 終了
+[2026-04-08 09:50:00] ==================================================
+[2026-04-08 09:50:00] [START] management_report 起動
+[2026-04-08 09:50:00] [対象] 20260407_経営会議 共有.pdf
+[2026-04-08 09:50:01] [PDF] テキスト抽出: 20260407_経営会議 共有.pdf
+Could get FontBBox from font descriptor because None cannot be parsed as 4 floats
+[2026-04-08 09:50:03] [PDF] 抽出完了: 11044 文字
+[2026-04-08 09:50:03] [Claude] 要約・アクション生成中...
+[2026-04-08 09:50:04] [Claude] 完了: 33 文字
+[2026-04-08 09:50:04] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-08 09:50:04] [完了] 20260407_経営会議 共有.pdf
+[2026-04-08 09:50:04] [END] management_report 終了
+[2026-04-08 09:50:00] ==================================================
+[2026-04-08 09:50:00] [START] management_report 起動
+[2026-04-08 09:50:00] [対象] 20260407_経営会議 共有.pdf
+[2026-04-08 09:50:01] [PDF] テキスト抽出: 20260407_経営会議 共有.pdf
+[2026-04-08 09:50:03] [PDF] 抽出完了: 11044 文字
+[2026-04-08 09:50:03] [Claude] 要約・アクション生成中...
+[2026-04-08 09:50:04] [Claude] 完了: 33 文字
+[2026-04-08 09:50:04] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-08 09:50:04] [完了] 20260407_経営会議 共有.pdf
+[2026-04-08 09:50:04] [END] management_report 終了
+[2026-04-15 09:50:00] ==================================================
+[2026-04-15 09:50:00] [START] management_report 起動
+[2026-04-15 09:50:00] ==================================================
+[2026-04-15 09:50:00] [START] management_report 起動
+Traceback (most recent call last):
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 174, in <module>
+    main()
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 138, in main
+    pdf_path = get_latest_pdf(state)
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 59, in get_latest_pdf
+    pdfs = [
+  File "/Users/dz0019/Desktop/claude_management/scripts/management_report.py", line 59, in <listcomp>
+    pdfs = [
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 1150, in iterdir
+    for name in self._accessor.listdir(self):
+OSError: [Errno 11] Resource deadlock avoided: '/Users/dz0019/Library/CloudStorage/GoogleDrive-mizutani_yuta@sirok.co.jp/マイドライブ/経営資料'
+[2026-04-22 09:50:00] ==================================================
+[2026-04-22 09:50:00] [START] management_report 起動
+[2026-04-22 09:50:00] [対象] 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:00] [PDF] テキスト抽出: 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:03] [PDF] 抽出完了: 13928 文字
+[2026-04-22 09:50:03] [Claude] 要約・アクション生成中...
+[2026-04-22 09:50:06] [Claude] 完了: 33 文字
+[2026-04-22 09:50:06] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-22 09:50:06] [完了] 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:06] [END] management_report 終了
+[2026-04-22 09:50:00] ==================================================
+[2026-04-22 09:50:00] [START] management_report 起動
+[2026-04-22 09:50:00] [対象] 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:00] [PDF] テキスト抽出: 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:03] [PDF] 抽出完了: 13928 文字
+[2026-04-22 09:50:03] [Claude] 要約・アクション生成中...
+[2026-04-22 09:50:06] [Claude] 完了: 33 文字
+[2026-04-22 09:50:06] [保存] レポート → 00_context/mgmt_report_latest.txt
+[2026-04-22 09:50:06] [完了] 20260420_経営会議　展開.pdf
+[2026-04-22 09:50:06] [END] management_report 終了
