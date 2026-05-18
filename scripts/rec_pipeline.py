@@ -123,7 +123,7 @@ def transcribe(audio_path: Path) -> str:
             [str(WHISPER_CLI), "-m", str(WHISPER_MODEL),
              "-f", str(wav_path), "-l", "ja",
              "--no-timestamps", "--output-txt", "--output-file", str(Path(tmp_dir) / "out")],
-            capture_output=True, text=True, timeout=1800,
+            capture_output=True, text=True, timeout=7200,
             env={**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         )
         if result.returncode != 0:
