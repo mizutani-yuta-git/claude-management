@@ -6,6 +6,7 @@
 
 | 調査日 | レポート（メイン） | URL数 | ブランド数 | キートレンド |
 |-------|---------|------|---------|-----------|
+| 2026-05-25 | [**全50ブランド総合版**](2026-05-25-competitor-video-research.md) | 39件 | 50 | SHISEIDO MEN夫婦共演・POLA B.A第7世代「時間は存在しない」・KANEBO「I HOPE.」YouTube Works Awards受賞・ANESSA×XG・ANUA×大橋和也K-Beautyローカライズ |
 | 2026-05-07 | [**全47ブランド総合版**](2026-05-07-competitor-video-research-full.md) | 約200件 | 47 | 男性アイドル×スキンケア急拡大・KANEBO「I HOPE.」プロジェクト型・欧米業界批判型・K-Beauty TikTok集中 |
 
 ### 2026-05-07 グループ別詳細レポート
