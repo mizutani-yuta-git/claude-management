@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.monoqrome.snstracker</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/dz0019/Desktop/claude_management/scripts/monoqrome_sns_tracker.py</string>
+    </array>
+
+    <!-- 毎日 10:07 に実行（業務時間内・:00/:30を避ける）。
+         Mac が消灯中は次回起動時に1回まとめて実行される。 -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>10</integer>
+        <key>Minute</key>
+        <integer>7</integer>
+    </dict>
+
+    <!-- launchd デーモン自身がリダイレクト先を開くため、TCC非保護の ~/Library/Logs に置く
+         （~/Desktop 配下に置くと EX_CONFIG(78) で起動前に失敗する） -->
+    <key>StandardOutPath</key>
+    <string>/Users/dz0019/Library/Logs/monoqrome_sns_tracker.launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/dz0019/Library/Logs/monoqrome_sns_tracker.launchd.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
