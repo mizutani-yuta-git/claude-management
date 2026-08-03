@@ -176,6 +176,13 @@ def git_record(today):
         if run(["diff", "--cached", "--quiet"]).returncode == 0:
             return "コミット差分なし"
         run(["commit", "-m", f"monoqrome SNS記録 {today}"])
+        # クラウドエージェントがリモートを進めている場合に備えて rebase してから push。
+        # --autostash: ユーザーの作業中変更でツリーが汚れていても安全にrebaseできる
+        # （これが無いと未ステージ変更で pull --rebase が毎回失敗し、pushが溜まる）
+        pull = run(["pull", "--rebase", "--autostash", "origin", "main"], timeout=60)
+        if pull.returncode != 0:
+            run(["rebase", "--abort"])
+            return "コミットのみ（pull --rebase失敗、次回実行時に再試行）"
         push = run(["push", "origin", "main"], timeout=60)
         return "コミット+プッシュ成功" if push.returncode == 0 else "コミットのみ（push失敗）"
     except Exception as e:
