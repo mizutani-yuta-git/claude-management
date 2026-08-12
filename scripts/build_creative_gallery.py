@@ -20,6 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 TRENDS_DIR = ROOT / "output" / "trends"
 CACHE_PATH = TRENDS_DIR / "thumbnails_cache.json"
+CACHE_V2_PATH = TRENDS_DIR / "thumbnails_cache_v2.json"
 OUTPUT_PATH = TRENDS_DIR / "creative-gallery.html"
 
 SOURCES = [
@@ -105,48 +106,193 @@ def youtube_thumbnail(url: str) -> str | None:
     return f"https://img.youtube.com/vi/{m.group(1)}/hqdefault.jpg"
 
 
-def fetch_ogp_image(page_url: str) -> str | None:
-    """WebページのOGP画像URLを取得。失敗時はNone。"""
+def fetch_page_html(page_url: str) -> str | None:
+    """ページのHTMLを取得（失敗時None）。"""
     if not page_url:
         return None
     try:
         req = urllib.request.Request(
             page_url, headers={"User-Agent": "Mozilla/5.0 (compatible; CreativeGalleryBot)"}
         )
-        with urllib.request.urlopen(req, timeout=10) as r:
-            raw = r.read(500_000).decode("utf-8", errors="ignore")
+        with urllib.request.urlopen(req, timeout=12) as r:
+            return r.read(900_000).decode("utf-8", errors="ignore")
     except Exception:
         return None
-    m = re.search(
-        r'<meta\s+property=["\']og:image["\']\s+content=["\']([^"\']+)["\']',
-        raw, re.IGNORECASE,
-    )
-    if not m:
-        m = re.search(
-            r'<meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:image["\']',
-            raw, re.IGNORECASE,
-        )
-    if not m:
-        m = re.search(
-            r'<meta\s+name=["\']twitter:image["\']\s+content=["\']([^"\']+)["\']',
-            raw, re.IGNORECASE,
-        )
+
+
+def _abs_url(img_url: str, page_url: str) -> str:
+    img_url = img_url.strip()
+    if img_url.startswith("//"):
+        return "https:" + img_url
+    if img_url.startswith("/"):
+        p = urllib.parse.urlparse(page_url)
+        return f"{p.scheme}://{p.netloc}{img_url}"
+    if img_url.startswith("http"):
+        return img_url
+    return urllib.parse.urljoin(page_url, img_url)
+
+
+def _og_image_from_html(raw: str, page_url: str) -> str | None:
+    for pat in (
+        r'<meta\s+property=["\']og:image(?::url)?["\']\s+content=["\']([^"\']+)["\']',
+        r'<meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:image["\']',
+        r'<meta\s+name=["\']twitter:image(?::src)?["\']\s+content=["\']([^"\']+)["\']',
+    ):
+        m = re.search(pat, raw, re.IGNORECASE)
+        if m:
+            return _abs_url(html_module.unescape(m.group(1)), page_url)
+    return None
+
+
+def fetch_ogp_image(page_url: str) -> str | None:
+    """後方互換：OGP画像だけを取得。"""
+    raw = fetch_page_html(page_url)
+    return _og_image_from_html(raw, page_url) if raw else None
+
+
+# 明らかにコンテンツ画像でないもの（ロゴ・アイコン・広告・SNS共有・トラッキング等）を除外
+_BAD_IMG = re.compile(
+    r"(logo|sprite|icon|favicon|avatar|gravatar|placeholder|blank|spacer|1x1|pixel|"
+    r"tracking|beacon|emoji|badge|loading|/ads?[/_-]|doubleclick|adsystem|"
+    r"share|social|footer|header[-_]|nav[-_]|\.svg(\?|$))",
+    re.IGNORECASE,
+)
+_IMG_TAG = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
+
+
+def _attr(tag: str, name: str):
+    return re.search(rf'{name}\s*=\s*["\']([^"\']+)["\']', tag, re.IGNORECASE)
+
+
+def _pick_src(tag: str) -> str | None:
+    for a in ("data-src", "data-original", "data-lazy-src", "data-lazy", "data-image"):
+        m = _attr(tag, a)
+        if m and m.group(1).strip():
+            return m.group(1).strip()
+    m = _attr(tag, "srcset")
+    if m:
+        parts = [p.strip().split(" ")[0] for p in m.group(1).split(",") if p.strip()]
+        if parts:
+            return parts[-1]  # srcsetの最後＝最大解像度が通例
+    m = _attr(tag, "src")
+    return m.group(1).strip() if m and m.group(1).strip() else None
+
+
+def _int_attr(tag: str, name: str):
+    m = _attr(tag, name)
     if not m:
         return None
-    img_url = html_module.unescape(m.group(1))
-    if img_url.startswith("//"):
-        img_url = "https:" + img_url
-    elif img_url.startswith("/"):
-        parsed = urllib.parse.urlparse(page_url)
-        img_url = f"{parsed.scheme}://{parsed.netloc}{img_url}"
-    return img_url
+    try:
+        return int(re.sub(r"[^\d]", "", m.group(1)) or 0)
+    except Exception:
+        return None
 
 
-def resolve_thumbnail(url: str) -> str | None:
-    yt = youtube_thumbnail(url)
-    if yt:
-        return yt
-    return fetch_ogp_image(url)
+def extract_image_candidates(raw: str, page_url: str) -> list[dict]:
+    """ページ内の候補画像を alt / 周辺テキスト / ファイル名つきで列挙。"""
+    cands: list[dict] = []
+    seen: set[str] = set()
+    og = _og_image_from_html(raw, page_url)
+    if og:
+        cands.append({"src": og, "alt": "", "ctx": "", "w": 1200, "is_og": True})
+        seen.add(og)
+    for m in _IMG_TAG.finditer(raw):
+        tag = m.group(0)
+        src = _pick_src(tag)
+        if not src or src.startswith("data:"):
+            continue
+        src = _abs_url(html_module.unescape(src), page_url)
+        if not src.startswith("http") or _BAD_IMG.search(src) or src in seen:
+            continue
+        w, h = _int_attr(tag, "width"), _int_attr(tag, "height")
+        if (w and w < 120) or (h and h < 120):
+            continue
+        alt_m = _attr(tag, "alt")
+        alt = html_module.unescape(alt_m.group(1)) if alt_m else ""
+        s, e = max(0, m.start() - 220), min(len(raw), m.end() + 220)
+        ctx = html_module.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw[s:e])))
+        seen.add(src)
+        cands.append({"src": src, "alt": alt, "ctx": ctx, "w": w or 0, "is_og": False})
+    return cands
+
+
+_TOKEN_SPLIT = re.compile(r"[×xX&・,/\s（）()\"'’“”—\-–|:：。、！!?？]+")
+
+
+def _tokens(rec: dict):
+    brand_toks, prod_toks = set(), set()
+    for chunk in _TOKEN_SPLIT.split(rec.get("brand", "")):
+        c = chunk.strip().lower()
+        if len(c) >= 3 and not c.isdigit():
+            brand_toks.add(c)
+    for chunk in _TOKEN_SPLIT.split(rec.get("format", "")):
+        c = chunk.strip().lower()
+        if len(c) >= 4 and not c.isdigit():
+            prod_toks.add(c)
+    return brand_toks, prod_toks
+
+
+def _score(cand: dict, brand_toks: set, prod_toks: set) -> float:
+    alt, fn, ctx = cand["alt"].lower(), cand["src"].lower(), cand["ctx"].lower()
+    s = 0.0
+    for t in brand_toks:
+        if t in alt: s += 6
+        elif t in fn: s += 5
+        elif t in ctx: s += 2.5
+    for t in prod_toks:
+        if t in alt: s += 3
+        elif t in fn: s += 2
+        elif t in ctx: s += 1.2
+    if cand["is_og"]:
+        s += 1.0            # 手掛かりが無いときだけOGPが勝つ程度の下駄
+    if cand["w"] and cand["w"] >= 500:
+        s += 0.8
+    return s
+
+
+def _assign_group(recs: list[dict], cands: list[dict], legacy_img: str | None) -> dict:
+    """同一URLを共有する複数エントリに、可能な限り別々の画像を割り当てる。"""
+    out: dict = {}
+    if not cands:
+        for r in recs:
+            out[id(r)] = legacy_img
+        return out
+    multi = len(recs) > 1
+    og_src = next((c["src"] for c in cands if c["is_og"]), None)
+    ranked_per = []
+    for r in recs:
+        bt, pt = _tokens(r)
+        ranked = sorted(cands, key=lambda c: _score(c, bt, pt), reverse=True)
+        best = _score(ranked[0], bt, pt) if ranked else 0.0
+        ranked_per.append((r, bt, pt, ranked, best))
+    # マッチが強いエントリから先に選ばせ、弱いエントリに残りを回す
+    ranked_per.sort(key=lambda x: x[4], reverse=True)
+    used: set[str] = set()
+    for r, bt, pt, ranked, _best in ranked_per:
+        chosen = None
+        for c in ranked:
+            sc = _score(c, bt, pt)
+            if multi and (not c["is_og"]) and c["src"] in used:
+                continue
+            if sc <= 1.0 and not c["is_og"]:
+                break                      # コンテンツ画像に手掛かり無し→打ち切り
+            chosen = c["src"]
+            if not c["is_og"]:
+                used.add(c["src"])
+            break
+        if chosen is None:                 # フォールバック
+            if og_src and (not multi or og_src not in used):
+                chosen = og_src
+            else:
+                spare = next(
+                    (c["src"] for c in cands if not c["is_og"] and c["src"] not in used),
+                    None,
+                )
+                chosen = spare or og_src or legacy_img
+                if spare:
+                    used.add(spare)
+        out[id(r)] = chosen
+    return out
 
 
 # ─── CSV正規化 ──────────────────────────────
@@ -205,45 +351,76 @@ def save_cache(cache: dict) -> None:
     )
 
 
+def load_cache_v2() -> dict:
+    if CACHE_V2_PATH.exists():
+        try:
+            return json.loads(CACHE_V2_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+
+def save_cache_v2(cache: dict) -> None:
+    CACHE_V2_PATH.write_text(
+        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def _sig(rec: dict) -> str:
+    """エントリ単位のキャッシュキー（同一URLでもブランド／作品名で別画像を持つため）。"""
+    return f"{rec['url']}\x01{rec.get('brand', '')}\x01{rec.get('format', '')[:60]}"
+
+
 def enrich_thumbnails(records: list[dict]) -> None:
-    cache = load_cache()
-    todo = []
+    legacy = load_cache()        # 旧 url->img（フォールバック用に読むだけ）
+    cache = load_cache_v2()      # sig->img（新方式）
+
+    pending = []
     for rec in records:
-        url = rec["url"]
-        if url in cache:
-            rec["thumbnail_url"] = cache[url]
+        yt = youtube_thumbnail(rec["url"])
+        if yt:                                   # YouTube等は動画固有サムネ
+            rec["thumbnail_url"] = yt
+            continue
+        k = _sig(rec)
+        if k in cache:
+            rec["thumbnail_url"] = cache[k]
         else:
-            yt = youtube_thumbnail(url)
-            if yt:
-                rec["thumbnail_url"] = yt
-                cache[url] = yt
-            else:
-                todo.append(rec)
+            pending.append(rec)
 
-    total = len(todo)
-    print(f"[info] {len(records)} records, {total} to fetch (cache: {len(cache)})")
-
-    if not todo:
-        save_cache(cache)
+    print(f"[info] {len(records)} records, {len(pending)} to resolve (v2 cache: {len(cache)})")
+    if not pending:
         return
 
-    done = 0
-    with ThreadPoolExecutor(max_workers=10) as ex:
-        future_to_rec = {ex.submit(fetch_ogp_image, r["url"]): r for r in todo}
-        for fut in as_completed(future_to_rec):
-            rec = future_to_rec[fut]
-            try:
-                thumb = fut.result()
-            except Exception:
-                thumb = None
-            rec["thumbnail_url"] = thumb
-            cache[rec["url"]] = thumb
-            done += 1
-            if done % 20 == 0 or done == total:
-                print(f"[info] fetched {done}/{total}")
-                save_cache(cache)
+    groups: dict[str, list[dict]] = {}
+    for r in pending:
+        groups.setdefault(r["url"], []).append(r)
+    urls = list(groups)
 
-    save_cache(cache)
+    # ページHTMLはURL単位で1回だけ取得（共有URLの重複取得を防ぐ）
+    html_map: dict[str, str | None] = {}
+    done = 0
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        fut = {ex.submit(fetch_page_html, u): u for u in urls}
+        for f in as_completed(fut):
+            u = fut[f]
+            try:
+                html_map[u] = f.result()
+            except Exception:
+                html_map[u] = None
+            done += 1
+            if done % 25 == 0 or done == len(urls):
+                print(f"[info] fetched {done}/{len(urls)} pages")
+
+    for u, recs in groups.items():
+        raw = html_map.get(u)
+        cands = extract_image_candidates(raw, u) if raw else []
+        assign = _assign_group(recs, cands, legacy.get(u))
+        for r in recs:
+            img = assign.get(id(r)) or legacy.get(u)
+            r["thumbnail_url"] = img
+            cache[_sig(r)] = img
+
+    save_cache_v2(cache)
 
 
 # ─── HTML生成 ────────────────────────────────
