@@ -73,9 +73,9 @@ SOURCES = [
         },
     },
     {
-        "id": "global",
-        "label": "グローバル映像クリエイティブ",
-        "path": TRENDS_DIR / "global-creative-master.csv",
+        "id": "global_skincare",
+        "label": "グローバルスキンケア",
+        "path": TRENDS_DIR / "global-skincare-master.csv",
         "fields": {
             "date": "調査日",
             "brand": "ブランド_アーティスト",
@@ -89,9 +89,9 @@ SOURCES = [
         },
     },
     {
-        "id": "global_skincare",
-        "label": "グローバルスキンケア",
-        "path": TRENDS_DIR / "global-skincare-master.csv",
+        "id": "global",
+        "label": "グローバル映像クリエイティブ",
+        "path": TRENDS_DIR / "global-creative-master.csv",
         "fields": {
             "date": "調査日",
             "brand": "ブランド_アーティスト",
