@@ -74,8 +74,24 @@ SOURCES = [
     },
     {
         "id": "global",
-        "label": "グローバルクリエイティブ",
+        "label": "グローバル映像クリエイティブ",
         "path": TRENDS_DIR / "global-creative-master.csv",
+        "fields": {
+            "date": "調査日",
+            "brand": "ブランド_アーティスト",
+            "category": "カテゴリー",
+            "platform": "国_地域",
+            "url": "URL",
+            "format": "タイトル_作品名",
+            "description": "映像表現の特徴",
+            "cast": "監督_クリエイター",
+            "tags": "トレンドタグ",
+        },
+    },
+    {
+        "id": "global_skincare",
+        "label": "グローバルスキンケア",
+        "path": TRENDS_DIR / "global-skincare-master.csv",
         "fields": {
             "date": "調査日",
             "brand": "ブランド_アーティスト",
